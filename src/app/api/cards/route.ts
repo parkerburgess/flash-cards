@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { categoryId, clueType, clue, answer, flipEnabled } = body;
+    const { categoryId, clueType, clue, answer } = body;
 
     if (!categoryId || !clueType || !clue || !answer) {
       return NextResponse.json(
@@ -32,8 +32,7 @@ export async function POST(request: Request) {
       categoryId,
       clueType: clueType as ClueType,
       clue,
-      answer,
-      flipEnabled: Boolean(flipEnabled),
+      answer
     });
     return NextResponse.json({ data: card, error: null }, { status: 201 });
   } catch (err) {

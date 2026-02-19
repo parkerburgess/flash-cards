@@ -23,7 +23,6 @@ export default function CardForm({
   const [clueType, setClueType] = useState<ClueType>("text");
   const [clue, setClue] = useState("");
   const [answer, setAnswer] = useState("");
-  const [flipEnabled, setFlipEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [clueError, setClueError] = useState("");
@@ -36,14 +35,12 @@ export default function CardForm({
       setClueType(editCard.clueType);
       setClue(editCard.clue);
       setAnswer(editCard.answer);
-      setFlipEnabled(editCard.flipEnabled);
       setCategoryId(editCard.categoryId);
     } else {
       // Reset for create mode
       setClueType("text");
       setClue("");
       setAnswer("");
-      setFlipEnabled(false);
       setCategoryId(defaultCategoryId);
     }
     setError("");
@@ -65,7 +62,6 @@ export default function CardForm({
       const res = await fetch(`/api/cards/${editCard.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clueType, clue, answer, flipEnabled }),
       });
       const json = await res.json();
       setSaving(false);
@@ -75,7 +71,6 @@ export default function CardForm({
       const res = await fetch("/api/cards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryId, clueType, clue, answer, flipEnabled }),
       });
       const json = await res.json();
       setSaving(false);
@@ -83,7 +78,6 @@ export default function CardForm({
       // Reset for next create
       setClue("");
       setAnswer("");
-      setFlipEnabled(false);
     }
 
     onSaved();
@@ -142,18 +136,6 @@ export default function CardForm({
             className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
         </div>
-
-        {/* Flip enabled (text only) */}
-        {clueType === "text" && (
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={flipEnabled}
-              onChange={(e) => setFlipEnabled(e.target.checked)}
-            />
-            Flip enabled (randomly swap clue/answer)
-          </label>
-        )}
 
         {error && <p className="text-red-500 text-xs">{error}</p>}
 

@@ -5,7 +5,7 @@ import type { Card, CardResult } from "@/types";
 import FlashCard from "@/components/cards/FlashCard";
 import MockTestResults from "./MockTestResults";
 import CardCountPicker from "./CardCountPicker";
-import { shuffle, applyFlipEnabled } from "@/lib/utils/shuffle";
+import { shuffle } from "@/lib/utils/shuffle";
 
 interface Props {
   cards: Card[];
@@ -14,29 +14,29 @@ interface Props {
 export default function MockTest({ cards }: Props) {
   const [count, setCount] = useState(Math.min(10, cards.length));
   const [sessionCards, setSessionCards] = useState<Card[] | null>(null);
-  const [idx, setIdx] = useState(0);
+  const [cardIndex, setCardIndex] = useState(0);
   const [results, setResults] = useState<CardResult[]>([]);
 
   const started = sessionCards !== null;
-  const finished = started && idx >= (sessionCards?.length ?? 0);
+  const finished = started && cardIndex >= (sessionCards?.length ?? 0);
 
   const startSession = () => {
-    const picked = applyFlipEnabled(shuffle(cards).slice(0, count));
+    const picked = shuffle(cards).slice(0, count);
     setSessionCards(picked);
-    setIdx(0);
+    setCardIndex(0);
     setResults([]);
   };
 
   const handleResult = (status: CardResult["status"]) => {
     if (!sessionCards) return;
-    const card = sessionCards[idx];
+    const card = sessionCards[cardIndex];
     setResults((r) => [...r, { cardId: card.id, submission: "", status }]);
-    setIdx((i) => i + 1);
+    setCardIndex((i) => i + 1);
   };
 
   const handleRestart = () => {
     setSessionCards(null);
-    setIdx(0);
+    setCardIndex(0);
     setResults([]);
   };
 
@@ -66,7 +66,7 @@ export default function MockTest({ cards }: Props) {
     );
   }
 
-  const current = sessionCards![idx];
+  const current = sessionCards![cardIndex];
   const correct = results.filter((r) => r.status === "correct").length;
   const incorrect = results.filter((r) => r.status === "incorrect").length;
 
@@ -74,18 +74,19 @@ export default function MockTest({ cards }: Props) {
     <div className="max-w-lg mx-auto">
       {/* Progress bar */}
       <div className="flex items-center justify-between mb-3 text-sm text-gray-500">
-        <span>Card {idx + 1} of {sessionCards!.length}</span>
+        <span>Card {cardIndex + 1} of {sessionCards!.length}</span>
         <span className="text-green-600 font-medium">{correct} ✓</span>
         <span className="text-red-500 font-medium">{incorrect} ✗</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
         <div
           className="bg-indigo-500 h-2 rounded-full transition-all"
-          style={{ width: `${(idx / sessionCards!.length) * 100}%` }}
+          style={{ width: `${(cardIndex / sessionCards!.length) * 100}%` }}
         />
       </div>
 
       <FlashCard
+        key={current.id}
         card={current}
         showControls
         onCorrect={() => handleResult("correct")}

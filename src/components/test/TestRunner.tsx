@@ -5,7 +5,7 @@ import type { Card, CardResult, CardResultStatus, TestMode, TestResult } from "@
 import TestCardClue from "./TestCardClue";
 import TestCardAnswer from "./TestCardAnswer";
 import TestResults from "./TestResults";
-import { shuffle, applyFlipEnabled } from "@/lib/utils/shuffle";
+import { shuffle } from "@/lib/utils/shuffle";
 import { calcCountModeScore, calcSurvivalScore } from "@/lib/utils/scoring";
 
 type Phase = "clue" | "answer";
@@ -29,9 +29,9 @@ export default function TestRunner({
 }: Props) {
   const totalCards = count ?? cards.length;
   const [sessionCards] = useState<Card[]>(() =>
-    applyFlipEnabled(shuffle(cards).slice(0, totalCards))
+    shuffle(cards).slice(0, totalCards)
   );
-  const [idx, setIdx] = useState(0);
+  const [cardIndex, setCardIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("clue");
   const [lastSubmission, setLastSubmission] = useState("");
   const [lastStatus, setLastStatus] = useState<CardResultStatus>("skipped");
@@ -40,7 +40,7 @@ export default function TestRunner({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  const currentCard = sessionCards[idx];
+  const currentCard = sessionCards[cardIndex];
 
   const isTerminated = (() => {
     if (mode !== "survival") return false;
@@ -48,7 +48,7 @@ export default function TestRunner({
     return nonCorrect >= incorrectsAllowed;
   })();
 
-  const isFinished = savedResult !== null || isTerminated || idx >= sessionCards.length;
+  const isFinished = savedResult !== null || isTerminated || cardIndex >= sessionCards.length;
 
   const gradeAnswer = (submission: string): CardResultStatus => {
     if (!submission.trim()) return "skipped";
@@ -73,12 +73,12 @@ export default function TestRunner({
   };
 
   const handleNext = async () => {
-    const newIdx = idx + 1;
+    const newCardIndex = cardIndex + 1;
     const newResults = results; // already updated in handleSubmit/handleSkip
     const newNonCorrect = newResults.filter((r) => r.status !== "correct").length;
 
     const survivalDone = mode === "survival" && newNonCorrect >= incorrectsAllowed;
-    const countDone = mode === "count" && newIdx >= sessionCards.length;
+    const countDone = mode === "count" && newCardIndex >= sessionCards.length;
 
     if (survivalDone || countDone) {
       // Save result
@@ -102,7 +102,7 @@ export default function TestRunner({
         setSaving(false);
       }
     } else {
-      setIdx(newIdx);
+      setCardIndex(newCardIndex);
       setPhase("clue");
     }
   };
@@ -128,7 +128,7 @@ export default function TestRunner({
     <div className="max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 text-sm text-gray-500">
-        <span>Card {idx + 1} of {sessionCards.length}</span>
+        <span>Card {cardIndex + 1} of {sessionCards.length}</span>
         {mode === "survival" && (
           <span className="text-red-500 font-medium">
             {incorrectsAllowed - nonCorrect} strikes left
@@ -143,7 +143,7 @@ export default function TestRunner({
       <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
         <div
           className="bg-indigo-500 h-2 rounded-full transition-all"
-          style={{ width: `${(idx / sessionCards.length) * 100}%` }}
+          style={{ width: `${(cardIndex / sessionCards.length) * 100}%` }}
         />
       </div>
 

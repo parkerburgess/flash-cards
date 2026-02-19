@@ -10,15 +10,3 @@ export function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
-/**
- * Applied ONCE at session start. For text cards with flipEnabled,
- * randomly swap clue and answer.
- */
-export function applyFlipEnabled(cards: Card[]): Card[] {
-  return cards.map((card) => {
-    if (card.clueType === "text" && card.flipEnabled && Math.random() < 0.5) {
-      return { ...card, clue: card.answer, answer: card.clue };
-    }
-    return card;
-  });
-}

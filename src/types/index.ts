@@ -11,7 +11,6 @@ export interface Card {
   clueType: ClueType;
   clue: string; // text OR base64 data-URL
   answer: string;
-  flipEnabled: boolean; // text cards only — randomly swap clue/answer
   createdAt: string;
   updatedAt: string;
 }

@@ -12,7 +12,7 @@ interface Props {
   onSkip?: () => void;
   showControls?: boolean;
 }
-
+ 
 export default function FlashCard({ card, onCorrect, onIncorrect, onSkip, showControls = false }: Props) {
   const [flipped, setFlipped] = useState(false);
 
