@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(dir:*)",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell -NoProfile -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\parke\\\\OneDrive\\\\Documents\\\\Code\\\\Flash Cards'' -Force | Format-Table Name, Length, LastWriteTime -AutoSize\")",
+      "Bash(} else {)",
+      "Bash(Write-Host \"\"Scaffold FAILED.\"\")",
+      "Bash(})",
+      "Bash('@\nWrite-Host 'Script written. ' \")",
+      "Bash(powershell -File:*)"
+    ]
+  }
+}
