@@ -62,6 +62,7 @@ export default function CardForm({
       const res = await fetch(`/api/cards/${editCard.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clueType, clue, answer }),
       });
       const json = await res.json();
       setSaving(false);
@@ -71,6 +72,7 @@ export default function CardForm({
       const res = await fetch("/api/cards", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryId, clueType, clue, answer }),
       });
       const json = await res.json();
       setSaving(false);
