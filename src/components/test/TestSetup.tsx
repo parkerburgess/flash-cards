@@ -5,18 +5,18 @@ import type { Category, TestMode } from "@/types";
 
 interface Props {
   categories: Category[];
-  cardCounts: Record<string, number>; // categoryId -> count
-  onStart: (categoryId: string, mode: TestMode, count: number | null, incorrectsAllowed: number) => void;
+  cardCounts: Record<number, number>; // categoryId -> count
+  onStart: (categoryId: number, mode: TestMode, count: number | null, incorrectsAllowed: number) => void;
 }
 
 export default function TestSetup({ categories, cardCounts, onStart }: Props) {
-  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
+  const [categoryId, setCategoryId] = useState<number | "">(categories[0]?.id ?? "");
   const [mode, setMode] = useState<TestMode>("count");
   const [useAll, setUseAll] = useState(true);
   const [count, setCount] = useState(10);
   const [incorrectsAllowed, setIncorrectsAllowed] = useState(3);
 
-  const maxCards = cardCounts[categoryId] ?? 0;
+  const maxCards = categoryId === "" ? 0 : cardCounts[categoryId] ?? 0;
 
   const handleStart = () => {
     if (!categoryId) return;
@@ -30,7 +30,7 @@ export default function TestSetup({ categories, cardCounts, onStart }: Props) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
         <select
           value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
+          onChange={(e) => setCategoryId(Number(e.target.value))}
           className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
           {categories.map((c) => (

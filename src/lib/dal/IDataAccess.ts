@@ -3,9 +3,9 @@ import type { Card, Category, TestResult } from "@/types";
 export interface IDataAccess {
   getCategories(): Promise<Category[]>;
   createCategory(name: string): Promise<Category>;
-  deleteCategory(id: string): Promise<void>;
+  deleteCategory(id: number): Promise<void>;
 
-  getCards(categoryId?: string): Promise<Card[]>;
+  getCards(categoryId?: number): Promise<Card[]>;
   getCard(id: number): Promise<Card | null>;
   createCard(
     data: Omit<Card, "id" | "createdAt" | "updatedAt">
@@ -19,6 +19,6 @@ export interface IDataAccess {
   saveTestResult(
     data: Omit<TestResult, "id" | "timestamp">
   ): Promise<TestResult>;
-  getTestResults(categoryId?: string): Promise<TestResult[]>;
-  getTestResult(id: string): Promise<TestResult | null>;
+  getTestResults(categoryId?: number): Promise<TestResult[]>;
+  getTestResult(id: number): Promise<TestResult | null>;
 }

@@ -12,7 +12,7 @@ type Phase = "clue" | "answer";
 
 interface Props {
   cards: Card[];
-  categoryId: string;
+  categoryId: number;
   mode: TestMode;
   count: number | null; // null = all
   incorrectsAllowed: number;

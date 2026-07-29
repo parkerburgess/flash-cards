@@ -1,5 +1,5 @@
 export interface Category {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -7,7 +7,7 @@ export type ClueType = "text" | "image";
 
 export interface Card {
   id: number;
-  categoryId: string;
+  categoryId: number;
   clueType: ClueType;
   clue: string; // text OR base64 data-URL
   answer: string;
@@ -25,24 +25,10 @@ export interface CardResult {
 }
 
 export interface TestResult {
-  id: string;
-  categoryId: string;
+  id: number;
+  categoryId: number;
   mode: TestMode;
   score: number; // count mode = % (0–100); survival = correct count
   cardResults: CardResult[];
   timestamp: string;
-}
-
-// JSON file shapes
-export interface CategoriesFile {
-  categories: Category[];
-}
-
-export interface CardsFile {
-  nextId: number;
-  cards: Card[];
-}
-
-export interface TestResultsFile {
-  results: TestResult[];
 }

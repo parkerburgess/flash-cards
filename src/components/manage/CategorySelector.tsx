@@ -5,10 +5,10 @@ import type { Category } from "@/types";
 
 interface Props {
   categories: Category[];
-  selectedId: string;
-  onSelect: (id: string) => void;
+  selectedId: number | "";
+  onSelect: (id: number) => void;
   onCreated: () => void;
-  onDeleted: (id: string) => void;
+  onDeleted: (id: number) => void;
 }
 
 export default function CategorySelector({
@@ -41,7 +41,7 @@ export default function CategorySelector({
     onSelect(json.data.id);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm("Delete this category and all its cards?")) return;
     await fetch(`/api/categories/${id}`, { method: "DELETE" });
     onDeleted(id);

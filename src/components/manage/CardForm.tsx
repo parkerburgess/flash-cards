@@ -6,7 +6,7 @@ import ClueInput from "./ClueInput";
 
 interface Props {
   categories: Category[];
-  defaultCategoryId: string;
+  defaultCategoryId: number;
   editCard?: Card | null;
   onSaved: () => void;
   onCancel?: () => void;
@@ -105,7 +105,7 @@ export default function CardForm({
             <label className="block text-xs text-gray-500 mb-1">Category</label>
             <select
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
+              onChange={(e) => setCategoryId(Number(e.target.value))}
               className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
               {categories.map((c) => (

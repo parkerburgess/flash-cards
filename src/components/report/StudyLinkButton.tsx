@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 interface Props {
-  categoryId: string;
+  categoryId: number;
   label?: string;
 }
 

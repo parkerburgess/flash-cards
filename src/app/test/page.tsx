@@ -7,7 +7,7 @@ import TestRunner from "@/components/test/TestRunner";
 import type { Card, Category, TestMode } from "@/types";
 
 interface TestSession {
-  categoryId: string;
+  categoryId: number;
   mode: TestMode;
   count: number | null;
   incorrectsAllowed: number;
@@ -16,7 +16,7 @@ interface TestSession {
 
 export default function TestPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [cardCounts, setCardCounts] = useState<Record<string, number>>({});
+  const [cardCounts, setCardCounts] = useState<Record<number, number>>({});
   const [session, setSession] = useState<TestSession | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function TestPage() {
     setCategories(cats);
 
     // Fetch card counts for each category
-    const counts: Record<string, number> = {};
+    const counts: Record<number, number> = {};
     await Promise.all(
       cats.map(async (c) => {
         const res = await fetch(`/api/cards?categoryId=${c.id}`);
@@ -44,7 +44,7 @@ export default function TestPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleStart = async (
-    categoryId: string,
+    categoryId: number,
     mode: TestMode,
     count: number | null,
     incorrectsAllowed: number

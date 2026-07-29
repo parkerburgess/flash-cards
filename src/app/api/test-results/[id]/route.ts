@@ -1,20 +1,22 @@
 import { NextResponse } from "next/server";
 import dal from "@/lib/dal";
+import { badRequest, notFound, serverError } from "@/lib/api/responses";
 
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const result = await dal.getTestResult(params.id);
+    const id = Number(params.id);
+    if (isNaN(id)) {
+      return badRequest("Invalid id");
+    }
+    const result = await dal.getTestResult(id);
     if (!result) {
-      return NextResponse.json({ data: null, error: "Not found" }, { status: 404 });
+      return notFound();
     }
     return NextResponse.json({ data: result, error: null });
   } catch (err) {
-    return NextResponse.json(
-      { data: null, error: (err as Error).message },
-      { status: 500 }
-    );
+    return serverError(err);
   }
 }

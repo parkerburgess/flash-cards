@@ -10,10 +10,11 @@ import type { Card, Category } from "@/types";
 
 function StudyPageInner() {
   const searchParams = useSearchParams();
-  const initialCategoryId = searchParams.get("categoryId") ?? "";
+  const categoryIdParam = searchParams.get("categoryId");
+  const initialCategoryId = categoryIdParam ? Number(categoryIdParam) : "";
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | "">(initialCategoryId);
   const [cards, setCards] = useState<Card[]>([]);
   const [mode, setMode] = useState<StudyMode>("review");
   const [loading, setLoading] = useState(false);
@@ -47,7 +48,7 @@ function StudyPageInner() {
           <label className="block text-xs text-gray-500 mb-1">Category</label>
           <select
             value={selectedCategoryId}
-            onChange={(e) => setSelectedCategoryId(e.target.value)}
+            onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
             className="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           >
             {categories.map((c) => (

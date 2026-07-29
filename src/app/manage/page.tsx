@@ -10,7 +10,7 @@ import type { Card, Category } from "@/types";
 
 export default function ManagePage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | "">("");
   const [cards, setCards] = useState<Card[]>([]);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [deletingCard, setDeletingCard] = useState<Card | null>(null);
