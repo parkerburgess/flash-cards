@@ -40,103 +40,117 @@ function toCard(row: CardRow): Card {
 
 export class SqlDataAccess implements IDataAccess {
   // ── Categories ──────────────────────────────────────────────────────────
-  async getCategories(): Promise<Category[]> {
-    const pool = await getPool();
-    const result = await pool.request().query<CategoryRow>(`
-      SELECT CategoryId, Name FROM flashcards.Category ORDER BY Name
-    `);
-    return result.recordset.map((row) => ({ id: row.CategoryId, name: row.Name }));
-  }
-
-  async createCategory(name: string): Promise<Category> {
+  async getCategories(userId: string): Promise<Category[]> {
     const pool = await getPool();
     const result = await pool
       .request()
+      .input("userId", userId)
+      .query<CategoryRow>(`
+        SELECT CategoryId, Name FROM flashcards.Category
+        WHERE UserId = @userId
+        ORDER BY Name
+      `);
+    return result.recordset.map((row) => ({ id: row.CategoryId, name: row.Name }));
+  }
+
+  async createCategory(userId: string, name: string): Promise<Category> {
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("userId", userId)
       .input("name", name)
       .query<CategoryRow>(`
-        INSERT INTO flashcards.Category (Name)
+        INSERT INTO flashcards.Category (UserId, Name)
         OUTPUT INSERTED.CategoryId, INSERTED.Name
-        VALUES (@name)
+        VALUES (@userId, @name)
       `);
     const row = result.recordset[0];
     return { id: row.CategoryId, name: row.Name };
   }
 
-  async deleteCategory(id: number): Promise<void> {
+  async deleteCategory(userId: string, id: number): Promise<void> {
     const pool = await getPool();
     // Explicit dependency-ordered delete — all FKs are NO ACTION (see
     // sql/schema.sql: SQL Server rejects multiple cascade paths converging
     // on TestResultCard), so children must be removed before the parent.
-    await pool.request().input("id", id).query(`
+    // Every step is scoped to UserId so an id belonging to another user
+    // deletes nothing at any stage.
+    await pool.request().input("id", id).input("userId", userId).query(`
       DELETE trc
       FROM flashcards.TestResultCard trc
       JOIN flashcards.TestResult tr ON tr.TestResultId = trc.TestResultId
-      WHERE tr.CategoryId = @id;
+      WHERE tr.CategoryId = @id AND tr.UserId = @userId;
 
-      DELETE FROM flashcards.TestResult WHERE CategoryId = @id;
+      DELETE FROM flashcards.TestResult WHERE CategoryId = @id AND UserId = @userId;
 
       DELETE trc
       FROM flashcards.TestResultCard trc
       JOIN flashcards.Card c ON c.CardId = trc.CardId
-      WHERE c.CategoryId = @id;
+      WHERE c.CategoryId = @id AND c.UserId = @userId;
 
-      DELETE FROM flashcards.Card WHERE CategoryId = @id;
+      DELETE FROM flashcards.Card WHERE CategoryId = @id AND UserId = @userId;
 
-      DELETE FROM flashcards.Category WHERE CategoryId = @id;
+      DELETE FROM flashcards.Category WHERE CategoryId = @id AND UserId = @userId;
     `);
   }
 
   // ── Cards ────────────────────────────────────────────────────────────────
-  async getCards(categoryId?: number): Promise<Card[]> {
+  async getCards(userId: string, categoryId?: number): Promise<Card[]> {
     const pool = await getPool();
-    const request = pool.request();
+    const request = pool.request().input("userId", userId);
     if (categoryId !== undefined) request.input("categoryId", categoryId);
     const result = await request.query<CardRow>(`
       SELECT CardId, CategoryId, ClueType, Clue, Answer, CreatedAt, UpdatedAt
       FROM flashcards.Card
-      ${categoryId !== undefined ? "WHERE CategoryId = @categoryId" : ""}
+      WHERE UserId = @userId
+      ${categoryId !== undefined ? "AND CategoryId = @categoryId" : ""}
       ORDER BY CreatedAt
     `);
     return result.recordset.map(toCard);
   }
 
-  async getCard(id: number): Promise<Card | null> {
+  async getCard(userId: string, id: number): Promise<Card | null> {
     const pool = await getPool();
     const result = await pool
       .request()
       .input("id", id)
+      .input("userId", userId)
       .query<CardRow>(`
         SELECT CardId, CategoryId, ClueType, Clue, Answer, CreatedAt, UpdatedAt
-        FROM flashcards.Card WHERE CardId = @id
+        FROM flashcards.Card WHERE CardId = @id AND UserId = @userId
       `);
     return result.recordset[0] ? toCard(result.recordset[0]) : null;
   }
 
   async createCard(
+    userId: string,
     data: Omit<Card, "id" | "createdAt" | "updatedAt">
   ): Promise<Card> {
     const pool = await getPool();
+    await this.assertOwnsCategory(userId, data.categoryId);
     const result = await pool
       .request()
+      .input("userId", userId)
       .input("categoryId", data.categoryId)
       .input("clueType", data.clueType)
       .input("clue", data.clue)
       .input("answer", data.answer)
       .query<CardRow>(`
-        INSERT INTO flashcards.Card (CategoryId, ClueType, Clue, Answer)
+        INSERT INTO flashcards.Card (UserId, CategoryId, ClueType, Clue, Answer)
         OUTPUT INSERTED.CardId, INSERTED.CategoryId, INSERTED.ClueType,
                INSERTED.Clue, INSERTED.Answer, INSERTED.CreatedAt, INSERTED.UpdatedAt
-        VALUES (@categoryId, @clueType, @clue, @answer)
+        VALUES (@userId, @categoryId, @clueType, @clue, @answer)
       `);
     return toCard(result.recordset[0]);
   }
 
   async updateCard(
+    userId: string,
     id: number,
     data: Partial<Omit<Card, "id" | "categoryId" | "createdAt" | "updatedAt">>
   ): Promise<Card> {
     const pool = await getPool();
-    const request = pool.request().input("id", id);
+    const request = pool.request().input("id", id).input("userId", userId);
     const setClauses: string[] = [];
     if (data.clueType !== undefined) {
       request.input("clueType", data.clueType);
@@ -156,35 +170,41 @@ export class SqlDataAccess implements IDataAccess {
       UPDATE flashcards.Card SET ${setClauses.join(", ")}
       OUTPUT INSERTED.CardId, INSERTED.CategoryId, INSERTED.ClueType,
              INSERTED.Clue, INSERTED.Answer, INSERTED.CreatedAt, INSERTED.UpdatedAt
-      WHERE CardId = @id
+      WHERE CardId = @id AND UserId = @userId
     `);
     if (!result.recordset[0]) throw new Error(`Card ${id} not found`);
     return toCard(result.recordset[0]);
   }
 
-  async deleteCard(id: number): Promise<void> {
+  async deleteCard(userId: string, id: number): Promise<void> {
     const pool = await getPool();
     await pool
       .request()
       .input("id", id)
-      .query(`DELETE FROM flashcards.Card WHERE CardId = @id`);
+      .input("userId", userId)
+      .query(`DELETE FROM flashcards.Card WHERE CardId = @id AND UserId = @userId`);
   }
 
   // ── Test Results ─────────────────────────────────────────────────────────
   async saveTestResult(
+    userId: string,
     data: Omit<TestResult, "id" | "timestamp">
   ): Promise<TestResult> {
     const pool = await getPool();
+    await this.assertOwnsCategory(userId, data.categoryId);
+    await this.assertOwnsCards(userId, data.cardResults.map((cr) => cr.cardId));
+
     const headerResult = await pool
       .request()
+      .input("userId", userId)
       .input("categoryId", data.categoryId)
       .input("mode", data.mode)
       .input("score", data.score)
       .query<TestResultRow>(`
-        INSERT INTO flashcards.TestResult (CategoryId, Mode, Score)
+        INSERT INTO flashcards.TestResult (UserId, CategoryId, Mode, Score)
         OUTPUT INSERTED.TestResultId, INSERTED.CategoryId, INSERTED.Mode,
                INSERTED.Score, INSERTED.CreatedAt
-        VALUES (@categoryId, @mode, @score)
+        VALUES (@userId, @categoryId, @mode, @score)
       `);
     const header = headerResult.recordset[0];
 
@@ -211,31 +231,71 @@ export class SqlDataAccess implements IDataAccess {
     };
   }
 
-  async getTestResults(categoryId?: number): Promise<TestResult[]> {
+  async getTestResults(userId: string, categoryId?: number): Promise<TestResult[]> {
     const pool = await getPool();
-    const request = pool.request();
+    const request = pool.request().input("userId", userId);
     if (categoryId !== undefined) request.input("categoryId", categoryId);
     const headerResult = await request.query<TestResultRow>(`
       SELECT TestResultId, CategoryId, Mode, Score, CreatedAt
       FROM flashcards.TestResult
-      ${categoryId !== undefined ? "WHERE CategoryId = @categoryId" : ""}
+      WHERE UserId = @userId
+      ${categoryId !== undefined ? "AND CategoryId = @categoryId" : ""}
       ORDER BY CreatedAt DESC
     `);
     return this.attachCardResults(headerResult.recordset);
   }
 
-  async getTestResult(id: number): Promise<TestResult | null> {
+  async getTestResult(userId: string, id: number): Promise<TestResult | null> {
     const pool = await getPool();
     const headerResult = await pool
       .request()
       .input("id", id)
+      .input("userId", userId)
       .query<TestResultRow>(`
         SELECT TestResultId, CategoryId, Mode, Score, CreatedAt
-        FROM flashcards.TestResult WHERE TestResultId = @id
+        FROM flashcards.TestResult WHERE TestResultId = @id AND UserId = @userId
       `);
     if (!headerResult.recordset[0]) return null;
     const [result] = await this.attachCardResults(headerResult.recordset);
     return result;
+  }
+
+  // Category and Card ownership must be re-checked server-side on every
+  // write — the client-submitted categoryId/cardId values are otherwise
+  // just numbers an authenticated user could point at someone else's rows.
+  private async assertOwnsCategory(userId: string, categoryId: number): Promise<void> {
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("categoryId", categoryId)
+      .input("userId", userId)
+      .query(`
+        SELECT CategoryId FROM flashcards.Category
+        WHERE CategoryId = @categoryId AND UserId = @userId
+      `);
+    if (result.recordset.length === 0) {
+      throw new Error(`Category ${categoryId} not found`);
+    }
+  }
+
+  private async assertOwnsCards(userId: string, cardIds: number[]): Promise<void> {
+    const uniqueIds = Array.from(new Set(cardIds));
+    if (uniqueIds.length === 0) return;
+
+    const pool = await getPool();
+    const request = pool.request().input("userId", userId);
+    const idParams = uniqueIds.map((cardId, idx) => {
+      const paramName = `cardId${idx}`;
+      request.input(paramName, cardId);
+      return `@${paramName}`;
+    });
+    const result = await request.query<{ CardId: number }>(`
+      SELECT CardId FROM flashcards.Card
+      WHERE UserId = @userId AND CardId IN (${idParams.join(",")})
+    `);
+    if (result.recordset.length !== uniqueIds.length) {
+      throw new Error("One or more cards not found");
+    }
   }
 
   private async attachCardResults(

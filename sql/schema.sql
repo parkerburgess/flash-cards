@@ -6,15 +6,23 @@ IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'flashcards')
     EXEC('CREATE SCHEMA flashcards');
 GO
 
+-- UserId holds the auth-wandering-parker service's cuid()-based User.id.
+-- That User table lives in a separate service/database, so there is no
+-- local FK here — same pattern as good-bad-calendar.goodbad.Category/Day.
 CREATE TABLE flashcards.Category (
-    CategoryId INT IDENTITY(1,1) NOT NULL,
-    Name       NVARCHAR(200)     NOT NULL,
+    CategoryId INT           IDENTITY(1,1) NOT NULL,
+    UserId     NVARCHAR(50)  NOT NULL,
+    Name       NVARCHAR(200) NOT NULL,
     CONSTRAINT PK_Category PRIMARY KEY (CategoryId)
 );
 GO
 
+CREATE INDEX IX_Category_UserId ON flashcards.Category (UserId);
+GO
+
 CREATE TABLE flashcards.Card (
     CardId     INT IDENTITY(1,1) NOT NULL,
+    UserId     NVARCHAR(50)      NOT NULL,
     CategoryId INT               NOT NULL,
     ClueType   VARCHAR(10)       NOT NULL,
     Clue       NVARCHAR(MAX)     NOT NULL,
@@ -32,8 +40,12 @@ CREATE TABLE flashcards.Card (
 );
 GO
 
+CREATE INDEX IX_Card_UserId ON flashcards.Card (UserId);
+GO
+
 CREATE TABLE flashcards.TestResult (
     TestResultId INT IDENTITY(1,1) NOT NULL,
+    UserId       NVARCHAR(50)      NOT NULL,
     CategoryId   INT               NOT NULL,
     Mode         VARCHAR(10)       NOT NULL,
     Score        FLOAT             NOT NULL,
@@ -43,6 +55,9 @@ CREATE TABLE flashcards.TestResult (
         REFERENCES flashcards.Category (CategoryId),
     CONSTRAINT CK_TestResult_Mode CHECK (Mode IN ('count', 'survival'))
 );
+GO
+
+CREATE INDEX IX_TestResult_UserId ON flashcards.TestResult (UserId);
 GO
 
 -- One row per card answered within a test — normalizes the CardResult[]

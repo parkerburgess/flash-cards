@@ -11,24 +11,50 @@ const navLinks = [
   { href: "/report", label: "Report" },
 ];
 
-export default function NavBar() {
+interface NavBarProps {
+  userName: string | null;
+}
+
+async function signOut() {
+  await fetch("/api/auth/logout", { method: "POST" });
+  window.location.href = "/";
+}
+
+export default function NavBar({ userName }: NavBarProps) {
   const pathname = usePathname();
 
+  // #region Tailwind utility consts
+  const navCls = "bg-indigo-700 text-white shadow-md";
+  const containerCls = "max-w-5xl mx-auto px-4 flex items-center gap-6 h-14";
+  const brandCls = "font-bold text-lg tracking-tight mr-4";
+  const navLinkBaseCls = "text-sm font-medium transition-colors hover:text-indigo-200";
+  const navLinkActiveCls = `${navLinkBaseCls} underline text-white`;
+  const navLinkInactiveCls = `${navLinkBaseCls} text-indigo-200`;
+  const rightSectionCls = "ml-auto flex items-center gap-4";
+  const userNameCls = "text-sm text-indigo-200";
+  const signOutBtnCls =
+    "text-sm font-medium text-indigo-200 hover:text-white transition-colors cursor-pointer";
+  // #endregion
+
   return (
-    <nav className="bg-indigo-700 text-white shadow-md">
-      <div className="max-w-5xl mx-auto px-4 flex items-center gap-6 h-14">
-        <span className="font-bold text-lg tracking-tight mr-4">Flash Cards</span>
+    <nav className={navCls}>
+      <div className={containerCls}>
+        <span className={brandCls}>Flash Cards</span>
         {navLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
-            className={`text-sm font-medium transition-colors hover:text-indigo-200 ${
-              pathname === link.href ? "underline text-white" : "text-indigo-200"
-            }`}
+            className={pathname === link.href ? navLinkActiveCls : navLinkInactiveCls}
           >
             {link.label}
           </Link>
         ))}
+        <div className={rightSectionCls}>
+          {userName && <span className={userNameCls}>{userName}</span>}
+          <button type="button" onClick={signOut} className={signOutBtnCls}>
+            Sign out
+          </button>
+        </div>
       </div>
     </nav>
   );
