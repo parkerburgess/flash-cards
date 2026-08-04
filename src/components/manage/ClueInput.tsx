@@ -39,7 +39,7 @@ export default function ClueInput({
         <textarea
           value={clue}
           onChange={(e) => onClueChange(e.target.value)}
-          placeholder="Clue text…"
+          placeholder="Clue…"
           rows={2}
           className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
