@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dal from "@/lib/dal";
-import { getUserId } from "@wanderingparker/server";
+import { getUserId } from "@parkerburgess/wandering-parker-server";
 import { badRequest, notFound, serverError } from "@/lib/api/responses";
 
 export async function GET(

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@wanderingparker/server", "@wanderingparker/ui"],
+  transpilePackages: ["@parkerburgess/wandering-parker-server", "@parkerburgess/wandering-parker-ui"],
 };
 
 export default nextConfig;
