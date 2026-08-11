@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "@/components/layout/NavBar";
-import { getUserName } from "@/lib/auth";
+import { getUserName } from "@wanderingparker/server";
 
 export const metadata: Metadata = {
   title: "Flash Cards",

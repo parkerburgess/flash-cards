@@ -1,4 +1,4 @@
-import { getPool } from "@/lib/db";
+import { getPool } from "@wanderingparker/server";
 import type { Card, CardResult, Category, ClueType, TestResult } from "@/types";
 import type { IDataAccess } from "./IDataAccess";
 

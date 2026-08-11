@@ -9,15 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@wanderingparker/server": "github:parkerburgess/wp-server#v0.1.1",
+    "@wanderingparker/theme": "github:parkerburgess/wp-theme#v0.1.0",
+    "@wanderingparker/ui": "github:parkerburgess/wp-ui#v0.1.0",
     "jose": "^6.2.3",
-    "mssql": "^12.7.0",
     "next": "16.3.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/mssql": "^12.3.0",
     "@types/node": "^20",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

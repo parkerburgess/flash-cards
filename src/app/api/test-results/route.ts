@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import dal from "@/lib/dal";
 import type { CardResult, TestMode } from "@/types";
-import { getUserId } from "@/lib/auth";
+import { getUserId } from "@wanderingparker/server";
 import { badRequest, serverError } from "@/lib/api/responses";
 
 export async function GET(request: Request) {
