@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserMenu } from "@parkerburgess/wandering-parker-ui";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -15,11 +16,6 @@ interface NavBarProps {
   userName: string | null;
 }
 
-async function signOut() {
-  await fetch("/api/auth/logout", { method: "POST" });
-  window.location.href = "/";
-}
-
 export default function NavBar({ userName }: NavBarProps) {
   const pathname = usePathname();
 
@@ -31,9 +27,6 @@ export default function NavBar({ userName }: NavBarProps) {
   const navLinkActiveCls = `${navLinkBaseCls} underline text-white`;
   const navLinkInactiveCls = `${navLinkBaseCls} text-indigo-200`;
   const rightSectionCls = "ml-auto flex items-center gap-4";
-  const userNameCls = "text-sm text-indigo-200";
-  const signOutBtnCls =
-    "text-sm font-medium text-indigo-200 hover:text-white transition-colors cursor-pointer";
   // #endregion
 
   return (
@@ -50,10 +43,7 @@ export default function NavBar({ userName }: NavBarProps) {
           </Link>
         ))}
         <div className={rightSectionCls}>
-          {userName && <span className={userNameCls}>{userName}</span>}
-          <button type="button" onClick={signOut} className={signOutBtnCls}>
-            Sign out
-          </button>
+          {userName && <UserMenu userName={userName} />}
         </div>
       </div>
     </nav>
