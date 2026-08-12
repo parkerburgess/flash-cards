@@ -6,6 +6,7 @@ import PageWrapper from "@/components/layout/PageWrapper";
 import StudyModeSelector, { type StudyMode } from "@/components/study/StudyModeSelector";
 import DataReview from "@/components/study/DataReview";
 import MockTest from "@/components/study/MockTest";
+import { SlowRequestNotice, useSlowRequestNotice } from "@parkerburgess/wandering-parker-ui";
 import type { Card, Category } from "@/types";
 
 function StudyPageInner() {
@@ -40,6 +41,7 @@ function StudyPageInner() {
 
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
   useEffect(() => { fetchCards(); }, [fetchCards]);
+  const slowMessage = useSlowRequestNotice(loading);
 
   return (
     <PageWrapper title="Study">
@@ -61,7 +63,10 @@ function StudyPageInner() {
       {!selectedCategoryId ? (
         <p className="text-gray-400 italic">Select a category to study.</p>
       ) : loading ? (
-        <p className="text-gray-500">Loading…</p>
+        <>
+          <p className="text-gray-500 mb-3">Loading…</p>
+          <SlowRequestNotice message={slowMessage} />
+        </>
       ) : cards.length === 0 ? (
         <p className="text-gray-400 italic">No cards in this category.</p>
       ) : (

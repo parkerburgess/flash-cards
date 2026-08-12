@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import TestSetup from "@/components/test/TestSetup";
 import TestRunner from "@/components/test/TestRunner";
+import { SlowRequestNotice, useSlowRequestNotice } from "@parkerburgess/wandering-parker-ui";
 import type { Card, Category, TestMode } from "@/types";
 
 interface TestSession {
@@ -42,6 +43,7 @@ export default function TestPage() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+  const slowMessage = useSlowRequestNotice(loading);
 
   const handleStart = async (
     categoryId: number,
@@ -56,7 +58,12 @@ export default function TestPage() {
   };
 
   if (loading) {
-    return <PageWrapper title="Test"><p className="text-gray-500">Loading…</p></PageWrapper>;
+    return (
+      <PageWrapper title="Test">
+        <p className="text-gray-500 mb-3">Loading…</p>
+        <SlowRequestNotice message={slowMessage} />
+      </PageWrapper>
+    );
   }
 
   if (categories.length === 0) {

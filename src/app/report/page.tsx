@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import ReportGrouped from "@/components/report/ReportGrouped";
 import MissedCardsList from "@/components/report/MissedCardsList";
+import { SlowRequestNotice, useSlowRequestNotice } from "@parkerburgess/wandering-parker-ui";
 import type { Card, Category, TestResult } from "@/types";
 
 export default function ReportPage() {
@@ -31,9 +32,15 @@ export default function ReportPage() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+  const slowMessage = useSlowRequestNotice(loading);
 
   if (loading) {
-    return <PageWrapper title="Report"><p className="text-gray-500">Loading…</p></PageWrapper>;
+    return (
+      <PageWrapper title="Report">
+        <p className="text-gray-500 mb-3">Loading…</p>
+        <SlowRequestNotice message={slowMessage} />
+      </PageWrapper>
+    );
   }
 
   return (

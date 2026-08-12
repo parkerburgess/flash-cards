@@ -6,6 +6,7 @@ import CategorySelector from "@/components/manage/CategorySelector";
 import CardForm from "@/components/manage/CardForm";
 import DeleteConfirmModal from "@/components/manage/DeleteConfirmModal";
 import CardTable from "@/components/cards/CardTable";
+import { SlowRequestNotice, useSlowRequestNotice } from "@parkerburgess/wandering-parker-ui";
 import type { Card, Category } from "@/types";
 
 export default function ManagePage() {
@@ -42,6 +43,7 @@ export default function ManagePage() {
 
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
   useEffect(() => { fetchCards(); }, [fetchCards]);
+  const slowMessage = useSlowRequestNotice(loading);
 
   const handleCardSaved = () => {
     setEditingCard(null);
@@ -92,7 +94,10 @@ export default function ManagePage() {
         {/* Right: Card table */}
         <div className="lg:col-span-2">
           {loading ? (
-            <p className="text-gray-500">Loading cards…</p>
+            <>
+              <p className="text-gray-500 mb-3">Loading cards…</p>
+              <SlowRequestNotice message={slowMessage} />
+            </>
           ) : !selectedCategoryId ? (
             <p className="text-gray-400 italic">Select a category to view cards.</p>
           ) : cards.length === 0 ? (
